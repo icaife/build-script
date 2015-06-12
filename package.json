@@ -22,6 +22,7 @@
 		"gulp-filter": "*",
 		"gulp-if": "*",
 		"gulp-wrapper": "*",
-		"browser-sync": "*"
+		"browser-sync": "*",
+		"gulp-file-include": "*"
 	}
 }

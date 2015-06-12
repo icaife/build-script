@@ -36,10 +36,12 @@ function complier(opt) {
 		gulpif = require("gulp-if"),
 		wraper = require("gulp-wrapper"),
 		// livereload = require("gulp-livereload");
-		browserSync = require("browser-sync");
+		browserSync = require("browser-sync"),
+		includer = require("gulp-file-include");
 
 	var css = opt.css,
-		js = opt.js;
+		js = opt.js,
+		html = opt.html;
 
 	var util = {
 		css: function(files) {
@@ -50,7 +52,7 @@ function complier(opt) {
 				.pipe(gulpif(css.filter && css.filter.length, filter(css.filter)))
 				.pipe(less())
 				.pipe(autoprefixer({
-					browsers: ["last 3 version", "ie > 8", "Android >= 3", "Safari >= 5.1", "iOS >= 5"]
+					browsers: ["last 3 version", "ie > 6", "Android >= 3", "Safari >= 5.1", "iOS >= 5"]
 				}))
 				.pipe(minifycss({
 					compatibility: 'ie6'
@@ -58,7 +60,7 @@ function complier(opt) {
 				.pipe(gulp.dest(css.dest))
 				.pipe(browserSync.stream()) //browser sync 插入css
 				.pipe(notify({
-					message: "CSS 编译编译成功!"
+					message: "CSS complied!"
 				}));
 		},
 		js: function(files) {
@@ -70,7 +72,18 @@ function complier(opt) {
 				.pipe(gulpif(!opt.debug, uglify()))
 				.pipe(gulp.dest(js.dest))
 				.pipe(notify({
-					message: "JS 编译成功！"
+					message: "JS complied！"
+				}));
+		},
+		html: function(files) {
+			files
+				.pipe(plumber({ //错误处理
+					errorHandler: errrHandler
+				}))
+				.pipe(gulpif(html.filter && html.filter.length, filter(html.filter)))
+				.pipe(includer())
+				.pipe(gulp.dest(html.dest)).pipe(notify({
+					message: "HTML complied！"
 				}));
 		}
 	}
@@ -81,24 +94,30 @@ function complier(opt) {
 	/*JS 处理*/
 	util.js(gulp.src(js.src + "**/*.js"));
 
+	/*HTML 处理*/
+	util.html(gulp.src(html.src + "**/*.html"));
+
 	/*监控文件改变*/
+	//less
 	gulp
 		.watch(css.src + "**/*.less", function(files) {
 			util.css(gulp.src(files.path));
 		});
+
+	//js
 	gulp
 		.watch(js.src + "**/*.js", function(files) {
 			util.js(gulp.src(files.path));
 		});
 
-	// setTimeout(function() {
-	// 	console.log("-------live reload 开始监视---------");
-	// 	livereload.listen();
-	// 	gulp.watch([js.dest + "**/*.js", css.dest + "**/*.css", opt.rootPath + "**/*.html"], livereload.changed);
-	// }, 3000);
+	//html
+	gulp
+		.watch(html.src + "**/*.html", function(files) {
+			util.html(gulp.src(files.path));
+		});
 
 	setTimeout(function() {
-		console.log("-------browser sync 开始监视---------");
+		console.log("-------browser sync---------");
 
 		browserSync.init({
 			server: {
@@ -106,8 +125,8 @@ function complier(opt) {
 			}
 		});
 
-		gulp.watch([opt.rootPath + "**/*.html", js.dest + "**/*.js"], browserSync.reload);
-	}, 3000);
+		gulp.watch([html.dest + "**/*.html", js.dest + "**/*.js"], browserSync.reload);
+	}, 200);
 
 }
 
@@ -183,6 +202,11 @@ gulp.task("default", function() {
 			src: path.join(root, "js.src/"),
 			dest: path.join(root, "js/"),
 			filter: []
+		},
+		html: {
+			src: path.join(root, "html.src/"),
+			dest: path.join(root, "./"),
+			filter: ["**/*.html", "!**/*.module.html"]
 		},
 		debug: process.argv.indexOf("--debug") > 0 //调试模式
 	});
