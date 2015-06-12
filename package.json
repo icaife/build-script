@@ -1,0 +1,27 @@
+{
+	"name": "PROJ",
+	"title": "Leon.Cai",
+	"description": "FE BULID SCRIPT",
+	"version": "0.5.4",
+	"dependencies": {},
+	"devDependencies": {
+		"art-template": "*",
+		"gulp-autoprefixer": "*",
+		"gulp-imagemin": "*",
+		"gulp-less": "*",
+		"gulp-rename": "*",
+		"gulp-uglify": "*",
+		"native-msg-box": "*",
+		"gulp-clean": "*",
+		"gulp-concat": "*",
+		"gulp-minify-css": "*",
+		"gulp-notify": "*",
+		"gulp-replace": "*",
+		"gulp-plumber": "*",
+		"gulp-livereload": "*",
+		"gulp-filter": "*",
+		"gulp-if": "*",
+		"gulp-wrapper": "*",
+		"browser-sync": "*"
+	}
+}
