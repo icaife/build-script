@@ -1,12 +1,11 @@
-/*global require*/
-"uses script";
+/*global require,console,process*/
+"use strict";
 
 var gulp = require("gulp"),
 	path = require("path"),
 	fs,
 	msgErrs = {};
 
-;
 (function() {
 	try {
 		fs = require("fs-extra");
@@ -25,16 +24,16 @@ function complier(opt) {
 		uglify = require("gulp-uglify"),
 		autoprefixer = require("gulp-autoprefixer"),
 		minifycss = require("gulp-minify-css"),
-		imagemin = require("gulp-imagemin"),
-		rename = require("gulp-rename"),
-		clean = require("gulp-clean"),
-		concat = require("gulp-concat"),
+		// imagemin = require("gulp-imagemin"),
+		// rename = require("gulp-rename"),
+		// clean = require("gulp-clean"),
+		// concat = require("gulp-concat"),
 		notify = require("gulp-notify"),
-		replace = require("gulp-replace"),
+		// replace = require("gulp-replace"),
 		plumber = require("gulp-plumber"),
 		filter = require("gulp-filter"),
 		gulpif = require("gulp-if"),
-		wraper = require("gulp-wrapper"),
+		// wraper = require("gulp-wrapper"),
 		// livereload = require("gulp-livereload");
 		browserSync = require("browser-sync"),
 		includer = require("gulp-file-include");
@@ -54,9 +53,9 @@ function complier(opt) {
 				.pipe(autoprefixer({
 					browsers: ["last 3 version", "ie > 6", "Android >= 3", "Safari >= 5.1", "iOS >= 5"]
 				}))
-				.pipe(minifycss({
-					compatibility: 'ie6'
-				}))
+				.pipe(gulpif(opt.debug, minifycss({
+					compatibility: "ie6"
+				})))
 				.pipe(gulp.dest(css.dest))
 				.pipe(browserSync.stream()) //browser sync 插入css
 				.pipe(notify({
@@ -89,6 +88,8 @@ function complier(opt) {
 	}
 
 	/*CSS 处理*/
+	;
+
 	util.css(gulp.src(css.src + "**/*.less"));
 
 	/*JS 处理*/
@@ -138,10 +139,10 @@ function findRoot() {
 	var dir = process.argv.indexOf("--path"),
 		i;
 	return dir >= 0 ? process.argv[dir + 1] : (function() {
-		var paths = [".", "../test"];
+		var paths = [".", "../hztraffic"];
 		for (i = 0; i < paths.length; i++) {
 			dir = paths[i];
-			if (fs.existsSync(path.join(dir, "index.php"))) {
+			if (fs.existsSync(path.join(dir, "index.html"))) {
 				return dir;
 			}
 		}
@@ -154,19 +155,19 @@ function findRoot() {
  * @param   {String}        file        文件路径
  * @param   {Function}  callback    数据返回接口回调
  */
-function readJSON(file, callback) {
-	fs.readFile(file, {
-		encoding: "utf-8"
-	}, function(err, jsonstr) {
-		if (!err) {
-			try {
-				callback(JSON.parse(jsonstr));
-			} catch (ex) {
-				callback(eval.call({}, "(" + jsonstr + ")"));
-			}
-		}
-	});
-}
+// function readJSON(file, callback) {
+// 	fs.readFile(file, {
+// 		encoding: "utf-8"
+// 	}, function(err, jsonstr) {
+// 		if (!err) {
+// 			try {
+// 				callback(JSON.parse(jsonstr));
+// 			} catch (ex) {
+// 				callback(eval.call({}, "(" + jsonstr + ")"));
+// 			}
+// 		}
+// 	});
+// }
 
 /**
  * 异常处理
@@ -201,7 +202,7 @@ gulp.task("default", function() {
 		js: {
 			src: path.join(root, "js.src/"),
 			dest: path.join(root, "js/"),
-			filter: []
+			filter: ["**/*.js"]
 		},
 		html: {
 			src: path.join(root, "html.src/"),
