@@ -29,7 +29,7 @@ function complier(opt) {
 		// clean = require("gulp-clean"),
 		// concat = require("gulp-concat"),
 		notify = require("gulp-notify"),
-		// replace = require("gulp-replace"),
+		replace = require("gulp-replace"),
 		plumber = require("gulp-plumber"),
 		filter = require("gulp-filter"),
 		gulpif = require("gulp-if"),
@@ -67,6 +67,7 @@ function complier(opt) {
 				.pipe(plumber({ //错误处理
 					errorHandler: errrHandler
 				}))
+				.pipe(replace(/\r\n?/g, "\n"))
 				.pipe(gulpif(js.filter && js.filter.length, filter(js.filter)))
 				.pipe(gulpif(!opt.debug, uglify()))
 				.pipe(gulp.dest(js.dest))
@@ -85,10 +86,9 @@ function complier(opt) {
 					message: "HTML complied！"
 				}));
 		}
-	}
+	};
 
 	/*CSS 处理*/
-	;
 
 	util.css(gulp.src(css.src + "**/*.less"));
 
@@ -102,6 +102,7 @@ function complier(opt) {
 	//less
 	gulp
 		.watch(css.src + "**/*.less", function(files) {
+			console.log(files);
 			util.css(gulp.src(files.path));
 		});
 
@@ -139,7 +140,7 @@ function findRoot() {
 	var dir = process.argv.indexOf("--path"),
 		i;
 	return dir >= 0 ? process.argv[dir + 1] : (function() {
-		var paths = [".", "../hztraffic"];
+		var paths = [".", "../test"];
 		for (i = 0; i < paths.length; i++) {
 			dir = paths[i];
 			if (fs.existsSync(path.join(dir, "index.html"))) {
