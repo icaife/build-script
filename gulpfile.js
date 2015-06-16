@@ -25,7 +25,7 @@ function complier(opt) {
 		autoprefixer = require("gulp-autoprefixer"),
 		minifycss = require("gulp-minify-css"),
 		// imagemin = require("gulp-imagemin"),
-		// rename = require("gulp-rename"),
+		rename = require("gulp-rename"),
 		// clean = require("gulp-clean"),
 		// concat = require("gulp-concat"),
 		notify = require("gulp-notify"),
@@ -33,7 +33,7 @@ function complier(opt) {
 		plumber = require("gulp-plumber"),
 		filter = require("gulp-filter"),
 		gulpif = require("gulp-if"),
-		// wraper = require("gulp-wrapper"),
+		wraper = require("gulp-wrapper"),
 		// livereload = require("gulp-livereload");
 		browserSync = require("browser-sync"),
 		includer = require("gulp-file-include");
@@ -63,13 +63,27 @@ function complier(opt) {
 				}));
 		},
 		js: function(files) {
+			var modFilter = filter(["**/*.module.js"]),
+				jsFilter = filter(["*.js", "!**/*.module.js"]);
 			files
 				.pipe(plumber({ //错误处理
 					errorHandler: errrHandler
 				}))
 				.pipe(replace(/\r\n?/g, "\n"))
-				.pipe(gulpif(js.filter && js.filter.length, filter(js.filter)))
 				.pipe(gulpif(!opt.debug, uglify()))
+				.pipe(jsFilter)
+				.pipe(gulp.dest(js.dest))
+				.pipe(jsFilter.restore())
+				.pipe(modFilter)
+				.pipe(rename(function(path) {
+					path.basename = path.basename.replace(/\.\w+$/, "");
+				}))
+				.pipe(wraper({
+					header: function(file) {
+						return "(function(f){typeof define===\"function\"?define(" + moduleName(file, js.src) + ",f):f()})(function(require,exports,module){";
+					},
+					footer: "});"
+				}))
 				.pipe(gulp.dest(js.dest))
 				.pipe(notify({
 					message: "JS complied！"
@@ -150,6 +164,17 @@ function findRoot() {
 		return ".";
 	})();
 }
+
+/**
+ * 根据文件路径，转换为js模块id
+ * @param  {Object} file gulp-wrapper 插件所给出的文件信息
+ * @param {String} destPath 源地址
+ * @return {String}       js格式字符串
+ */
+function moduleName(file, srcPath) {
+	return JSON.stringify(path.relative(srcPath, file.path).replace(/\\/g, "/").replace(/\.\w+$/, ""));
+}
+
 
 /**
  * 读取JSON格式文件
